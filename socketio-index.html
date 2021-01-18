@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Minimal working example</title>
+</head>
+<body>
+    <form name="publish">
+        <input type="text" name="message">
+        <input type="submit" value="Send">
+    </form>
+    <ul id="events"></ul>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const $events = document.getElementById('events');
+
+        const newItem = (content) => {
+          const item = document.createElement('li');
+          item.innerText = content;
+          return item;
+        };
+
+        const socket = io();
+
+        socket.on('connect', () => {
+          $events.appendChild(newItem('connect'));
+        });
+
+        socket.on('hello', (counter) => {
+            $events.appendChild(newItem(`hello - ${counter}`));
+        });
+
+        let counter = 0;
+        setInterval(() => {
+            ++counter;
+            socket.emit('hey', { counter }); // the object will be serialized for you
+        }, 1000);
+
+        document.forms.publish.onsubmit = function() {
+            let outgoingMessage = this.message.value;
+            socket.send(outgoingMessage);
+        };
+    </script>
+</body>
+</html>
